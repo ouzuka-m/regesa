@@ -65,7 +65,7 @@ impl<'a> Tar<'a> {
 
                 let start_page = Page::<Size4KiB>::containing_address(VirtAddr::new(phdr.p_vaddr));
                 let end_vaddr = VirtAddr::new(phdr.p_vaddr + phdr.p_memsz);
-                // Kurangi 1 byte jika memsz > 0 agar address ujung tidak melompat ke page berikutnya jika pas di boundary
+
                 let end_page = Page::<Size4KiB>::containing_address(if phdr.p_memsz > 0 {
                     end_vaddr - 1u64
                 } else {
