@@ -4,14 +4,20 @@
 //! [`info!`], [`warn!`], and [`error!`] macros that write timestamped,
 //! level-tagged messages to the UART serial port.
 
-use core::fmt::{Arguments, Write};
+use core::{
+    fmt::{Arguments, Write},
+    sync::atomic::Ordering,
+};
 use x86_64::instructions::interrupts;
 
-use crate::{config::CONFIG, drivers::uart::SERIAL, log::level::Level};
+use crate::{
+    drivers::uart::{DROPPED_LOGS, SERIAL, UART_ERRORS},
+    log::level::{self, Level},
+};
 
 /// Internal logging function used by the logging macros.
 pub fn _log(level: Level, args: Arguments) {
-    if level < CONFIG.log_level() {
+    if !level::enabled(level) {
         return;
     }
 
@@ -19,24 +25,13 @@ pub fn _log(level: Level, args: Arguments) {
 
     interrupts::without_interrupts(|| {
         if let Some(mut serial) = SERIAL.try_lock() {
-            let _ = serial.write_fmt(args);
+            if serial.write_fmt(args).is_err() {
+                UART_ERRORS.fetch_add(1, Ordering::Relaxed);
+            };
+        } else {
+            DROPPED_LOGS.fetch_add(1, Ordering::Relaxed);
         }
     });
-}
-
-pub fn _log_raw(args: Arguments) {
-    interrupts::without_interrupts(|| {
-        if let Some(mut serial) = SERIAL.try_lock() {
-            let _ = serial.write_fmt(args);
-        }
-    });
-}
-
-#[macro_export]
-macro_rules! log {
-    ($($arg:tt)*) => {
-        $crate::log::macros::_log_raw(format_args!($($arg)*))
-    };
 }
 
 /// Logs a message at the debug level.

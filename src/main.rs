@@ -107,7 +107,7 @@ fn panic(info: &PanicInfo) -> ! {
 
     // Output formatted panic details to serial logger
     if let Some(location) = info.location() {
-        log!(
+        error!(
             "KERNEL PANIC: {}\n  at {}:{}:{}\n",
             info.message(),
             location.file(),
@@ -115,7 +115,7 @@ fn panic(info: &PanicInfo) -> ! {
             location.column()
         );
     } else {
-        log!("KERNEL PANIC: {}\n", info.message());
+        error!("KERNEL PANIC: {}\n", info.message());
     }
 
     qemu::exit::failure();

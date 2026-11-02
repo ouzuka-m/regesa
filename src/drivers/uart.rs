@@ -3,10 +3,15 @@
 //! Initialises the first serial port (COM1, I/O port `0x3F8`) and
 //! exposes it as a global mutex-protected static for kernel logging.
 
+use core::sync::atomic::AtomicU8;
+
 use spin::{Mutex, lazylock::LazyLock};
 use uart_16550::{Config, Uart16550Tty, backend::PioBackend};
 
 const PORT: u16 = 0x3F8;
+
+pub static UART_ERRORS: AtomicU8 = AtomicU8::new(0);
+pub static DROPPED_LOGS: AtomicU8 = AtomicU8::new(0);
 
 /// Global serial port instance used by the kernel logger.
 ///
