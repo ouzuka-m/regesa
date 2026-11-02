@@ -44,9 +44,8 @@ impl<'a> Tar<'a> {
         let elf_bytes =
             ElfBytes::<LittleEndian>::minimal_parse(data).map_err(|_| FsError::NotExecutable)?;
 
-        let header = elf_bytes.ehdr;
-        if header.e_type != ET_EXEC || header.class != Class::ELF64 || header.e_machine != EM_X86_64
-        {
+        let ehdr = elf_bytes.ehdr;
+        if ehdr.e_type != ET_EXEC || ehdr.class != Class::ELF64 || ehdr.e_machine != EM_X86_64 {
             return Err(FsError::NotExecutable);
         }
 
@@ -57,17 +56,23 @@ impl<'a> Tar<'a> {
                     continue;
                 }
 
+                let p_vaddr = phdr.p_vaddr;
+                let p_flags = phdr.p_flags;
+
+                let p_memsz = phdr.p_memsz;
+                let p_filesz = phdr.p_filesz;
+
                 let mut flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
 
-                if phdr.p_flags & 1 == 0 {
+                if p_flags & 1 == 0 {
                     flags |= PageTableFlags::NO_EXECUTE;
                 }
 
-                let start_page = Page::<Size4KiB>::containing_address(VirtAddr::new(phdr.p_vaddr));
-                let end_vaddr = VirtAddr::new(phdr.p_vaddr + phdr.p_memsz);
+                let start_page = Page::<Size4KiB>::containing_address(VirtAddr::new(p_vaddr));
+                let end_vaddr = VirtAddr::new(p_vaddr + p_memsz);
 
-                let end_page = Page::<Size4KiB>::containing_address(if phdr.p_memsz > 0 {
-                    end_vaddr - 1u64
+                let end_page = Page::<Size4KiB>::containing_address(if p_memsz > 0 {
+                    end_vaddr - 1
                 } else {
                     end_vaddr
                 });
@@ -87,29 +92,25 @@ impl<'a> Tar<'a> {
                     }
                 }
 
-                let raw_data = elf_bytes
+                let src = elf_bytes
                     .segment_data(&phdr)
-                    .map_err(|_| FsError::InvalidSegmentData)?;
-                let vaddr = phdr.p_vaddr as *mut u8;
+                    .map_err(|_| FsError::InvalidSegmentData)?
+                    .as_ptr();
+                let dst = p_vaddr as *mut u8;
                 unsafe {
-                    core::ptr::copy_nonoverlapping(
-                        raw_data.as_ptr(),
-                        vaddr,
-                        phdr.p_filesz as usize,
-                    );
+                    core::ptr::copy_nonoverlapping(src, dst, p_filesz as usize);
                 }
 
-                if phdr.p_memsz > phdr.p_filesz {
-                    let start = unsafe { vaddr.add(phdr.p_filesz as usize) };
-                    let end = (phdr.p_memsz - phdr.p_filesz) as usize;
+                // BSS Zeroing
+                if p_memsz > p_filesz {
+                    let start = unsafe { dst.add(p_filesz as usize) };
+                    let end = (p_memsz - p_filesz) as usize;
 
                     unsafe { core::ptr::write_bytes(start, 0x00, end) };
                 }
             }
 
-            let entry_point = header.e_entry;
-
-            let entry_fn: extern "C" fn() -> u64 = unsafe { core::mem::transmute(entry_point) };
+            let entry_fn: extern "C" fn() -> u64 = unsafe { core::mem::transmute(ehdr.e_entry) };
 
             let rax_result = entry_fn();
 
