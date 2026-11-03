@@ -86,7 +86,6 @@ impl Config {
         }
     }
 
-    
     pub const fn log_level(&self) -> Level {
         self.log_level
     }
