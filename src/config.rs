@@ -40,12 +40,14 @@ impl TickInterval {
 
 #[derive(Debug)]
 pub struct Config {
+    log_level: Level,
     tick_interval: TickInterval,
 }
 
 impl Default for Config {
     fn default() -> Self {
         Self {
+            log_level: Level::Info,
             tick_interval: TickInterval::Ms100,
         }
     }
@@ -62,8 +64,7 @@ impl Config {
 
             match key {
                 "log_level" => {
-                    let level = Self::parse_log_level(value);
-                    level::set_level(level);
+                    config.log_level = Self::parse_log_level(value);
                 }
                 "tick_ms" => {
                     config.tick_interval = TickInterval::parse(value);
@@ -85,7 +86,18 @@ impl Config {
         }
     }
 
+    
+    pub const fn log_level(&self) -> Level {
+        self.log_level
+    }
+
     pub const fn tick_interval(&self) -> TickInterval {
         self.tick_interval
     }
+}
+
+pub fn init() {
+    let config = &*CONFIG;
+
+    level::set_level(config.log_level());
 }

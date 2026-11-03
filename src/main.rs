@@ -26,10 +26,9 @@ mod x86_64;
 use ::x86_64::instructions::{self, interrupts};
 use core::panic::PanicInfo;
 
-use crate::initramfs::TAR;
-
 use self::{
     display::greet,
+    initramfs::TAR,
     memory::heap_allocator,
     x86_64::{gdt, idt},
 };
@@ -51,6 +50,8 @@ use self::{
 extern "C" fn _start() -> ! {
     // Disable CPU hardware interrupts during critical boot sequence
     instructions::interrupts::disable();
+
+    config::init();
 
     info!("Regesa Kernel starting...");
 

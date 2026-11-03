@@ -7,6 +7,7 @@ use core::sync::atomic::{AtomicU8, Ordering};
 pub static LOG_LEVEL: AtomicU8 = AtomicU8::new(Level::Info as u8);
 
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq)]
+#[repr(u8)]
 pub enum Level {
     Debug = 0,
     Info = 1,
