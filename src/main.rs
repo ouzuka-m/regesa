@@ -34,18 +34,6 @@ use self::{
 };
 
 /// Kernel entry point called by the Limine bootloader.
-///
-/// This function performs early kernel setup in sequential phases:
-/// 1. Disables CPU interrupts to ensure atomic subsystem initialization.
-/// 2. Configures the Global Descriptor Table (GDT) and Task State Segment (TSS).
-/// 3. Populates and loads the Interrupt Descriptor Table (IDT).
-/// 4. Initializes page table mapping and physical frame allocation.
-/// 5. Initializes the global dynamic heap allocator.
-/// 6. Configures the ACPI subsystem, legacy PIC disabling, and APIC/IOAPIC routing.
-/// 7. Enables CPU interrupts and enters an infinite `hlt` loop to wait for hardware events.
-///
-/// # Divergence
-/// This function never returns (`-> !`).
 #[unsafe(no_mangle)]
 extern "C" fn _start() -> ! {
     // Disable CPU hardware interrupts during critical boot sequence
