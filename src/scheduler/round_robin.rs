@@ -1,8 +1,8 @@
 use crate::{
+    error::{Error, Result},
     memory::stack::Stack,
     scheduler::{
-        context::Context, error::SpawnError, exit, idle, rflags::RFLAGS, state::State,
-        switch::Switch, task::Task,
+        context::Context, exit, idle, rflags::RFLAGS, state::State, switch::Switch, task::Task,
     },
 };
 
@@ -107,7 +107,7 @@ impl<const N: usize> RoundRobin<N> {
     }
 
     #[allow(dead_code)]
-    pub fn spawn(&mut self, entry: fn()) -> Result<usize, SpawnError> {
+    pub fn spawn(&mut self, entry: fn()) -> Result<usize> {
         if let Some(index) = self.tasks.iter().position(Option::is_none) {
             let stack = Stack::alloc();
             let mut rsp = stack.top();
@@ -134,7 +134,7 @@ impl<const N: usize> RoundRobin<N> {
             return Ok(index);
         }
 
-        Err(SpawnError::CapacityFull)
+        Err(Error::ProcessLimitReached)
     }
 
     #[allow(dead_code)]

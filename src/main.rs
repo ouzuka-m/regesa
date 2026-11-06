@@ -16,6 +16,8 @@ mod boot;
 mod config;
 mod display;
 mod drivers;
+mod error;
+mod fs;
 mod initramfs;
 mod log;
 mod memory;

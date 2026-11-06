@@ -1,5 +1,4 @@
 pub mod context;
-pub mod error;
 pub mod exit;
 pub mod idle;
 pub mod rflags;
