@@ -3,6 +3,7 @@ use crate::{
     fs::file::File,
     memory::{frame_allocator::FRAME_ALLOCATOR, mapper},
     scheduler::SCHEDULER,
+    warn,
 };
 use elf::{
     ElfBytes,
@@ -43,6 +44,8 @@ pub fn spawn(file: &dyn File) -> Result<usize> {
 
             if p_flags & 1 == 0 {
                 flags |= PageTableFlags::NO_EXECUTE;
+
+                warn!("Loading RWX segment! This is insecure, W^X violated");
             }
 
             let start_page = Page::<Size4KiB>::containing_address(VirtAddr::new(p_vaddr));
