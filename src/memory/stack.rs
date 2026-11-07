@@ -1,6 +1,5 @@
 use x86_64::{
     VirtAddr,
-    instructions::interrupts,
     structures::paging::{FrameAllocator, FrameDeallocator, PageSize, PhysFrame, Size4KiB},
 };
 
@@ -17,7 +16,9 @@ pub struct Stack {
 
 impl Stack {
     pub fn alloc() -> Result<Self> {
-        let frame = interrupts::without_interrupts(|| FRAME_ALLOCATOR.lock().allocate_frame())
+        let frame = FRAME_ALLOCATOR
+            .lock()
+            .allocate_frame()
             .ok_or(Error::OutOfMemory)?;
 
         let top = frame.start_address().to_virt() + Size4KiB::SIZE;

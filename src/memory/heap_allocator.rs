@@ -32,22 +32,23 @@ pub fn init() {
         Page::range_inclusive(start_page, end_page)
     };
 
+    let mut frame_allocator = FRAME_ALLOCATOR.lock();
+
     for page in page_range {
-        let frame = FRAME_ALLOCATOR
-            .lock()
-            .allocate_frame()
-            .expect("Failed to allocate frame");
+        let frame = frame_allocator.allocate_frame().expect("No usable memory");
         let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE | PageTableFlags::NO_EXECUTE;
         // SAFETY: The page is in the dedicated heap virtual range and has
         // not been previously mapped. The frame is freshly allocated and
         // the flags grant read/write access with no-execute.
         unsafe {
             mapper
-                .map_to(page, frame, flags, &mut *FRAME_ALLOCATOR.lock())
+                .map_to(page, frame, flags, &mut *frame_allocator)
                 .expect("Failed to map page & frame")
                 .flush();
         }
     }
+
+    drop(frame_allocator);
 
     // SAFETY: The virtual address range [HEAP_START .. HEAP_START + HEAP_SIZE)
     // has just been identity-mapped to valid physical frames above, so it is
