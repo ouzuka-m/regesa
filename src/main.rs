@@ -69,10 +69,10 @@ extern "C" fn _start() -> ! {
 
     qemu::exit::success();
 
-    match BOOTFS.open("/bin/init.bin") {
+    match BOOTFS.open("/bin/init") {
         Ok(file) => {
             if let Err(error) = process::spawn(file) {
-                panic!("Failed to execute /bin/init.bin: {error}")
+                panic!("Failed to execute /bin/init: {error}")
             };
 
             prompt!();
@@ -83,7 +83,7 @@ extern "C" fn _start() -> ! {
                 instructions::hlt();
             }
         }
-        Err(error) => panic!("Failed to execute /bin/init.bin: {error}"),
+        Err(error) => panic!("Failed to execute /bin/init: {error}"),
     }
 }
 

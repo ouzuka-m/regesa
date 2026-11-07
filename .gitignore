@@ -5,3 +5,6 @@ initramfs.tar
 *.elf
 *.bin
 *.o
+
+/rootfs/bin/*
+!/rootfs/bin/*.asm
