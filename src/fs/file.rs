@@ -5,5 +5,6 @@ pub trait File {
 
     fn name(&self) -> &str;
 
+    #[allow(dead_code)]
     fn size(&self) -> u64;
 }

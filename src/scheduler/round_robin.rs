@@ -21,7 +21,7 @@ impl<const N: usize> RoundRobin<N> {
             first_run: true,
         };
 
-        let stack = Stack::alloc();
+        let stack = Stack::alloc().expect("No usable memory");
         let mut rsp = stack.top();
 
         rsp -= 8;
@@ -106,10 +106,9 @@ impl<const N: usize> RoundRobin<N> {
         Switch::None
     }
 
-    #[allow(dead_code)]
     pub fn spawn(&mut self, entry: fn()) -> Result<usize> {
         if let Some(index) = self.tasks.iter().position(Option::is_none) {
-            let stack = Stack::alloc();
+            let stack = Stack::alloc()?;
             let mut rsp = stack.top();
 
             rsp -= 8;
@@ -137,7 +136,6 @@ impl<const N: usize> RoundRobin<N> {
         Err(Error::ProcessLimitReached)
     }
 
-    #[allow(dead_code)]
     pub fn release_current(&mut self) {
         if let Some(task) = self.tasks[self.current].as_ref() {
             task.deallocate_stack();

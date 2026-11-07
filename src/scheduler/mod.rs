@@ -36,3 +36,7 @@ pub fn schedule() {
         }
     }
 }
+
+pub fn init() {
+    LazyLock::force(&SCHEDULER);
+}

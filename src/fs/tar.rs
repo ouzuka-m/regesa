@@ -37,6 +37,8 @@ impl<'a> FileSystem<Entry<'a>> for Tar<'a> {
 pub struct Entry<'a> {
     name: &'a str,
     data: &'a [u8],
+
+    #[allow(dead_code)]
     size: u64,
 }
 

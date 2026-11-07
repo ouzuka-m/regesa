@@ -24,6 +24,8 @@ pub enum Error {
 
     /// A program segment (e.g., PT_LOAD) has invalid offset, size, or alignment.
     InvalidSegment,
+
+    MissingProgramHeaders,
 }
 
 impl fmt::Display for Error {
@@ -35,6 +37,7 @@ impl fmt::Display for Error {
             Self::OutOfMemory => write!(f, "not enough usable memory to load executable"),
             Self::MemoryMapFailed => write!(f, "failed to map executable into memory"),
             Self::InvalidSegment => write!(f, "executable contains invalid segment data"),
+            Self::MissingProgramHeaders => write!(f, "executable doesn't have program headers"),
         }
     }
 }

@@ -18,9 +18,9 @@ mod display;
 mod drivers;
 mod error;
 mod fs;
-mod initramfs;
 mod log;
 mod memory;
+mod process;
 mod qemu;
 mod scheduler;
 mod x86_64;
@@ -28,9 +28,10 @@ mod x86_64;
 use ::x86_64::instructions::{self, interrupts};
 use core::panic::PanicInfo;
 
+use crate::fs::{bootfs::BOOTFS, filesystem::FileSystem};
+
 use self::{
     display::greet,
-    initramfs::TAR,
     memory::heap_allocator,
     x86_64::{gdt, idt},
 };
@@ -39,7 +40,7 @@ use self::{
 #[unsafe(no_mangle)]
 extern "C" fn _start() -> ! {
     // Disable CPU hardware interrupts during critical boot sequence
-    instructions::interrupts::disable();
+    interrupts::disable();
 
     config::init();
 
@@ -60,23 +61,29 @@ extern "C" fn _start() -> ! {
     // Greet to the screen
     greet::welcome();
 
+    scheduler::init();
+
     interrupts::enable();
 
     info!("Kernel initialized successfully");
 
     qemu::exit::success();
 
-    info!("Executing `/bin/init.bin`");
-    if let Err(error) = TAR.spawn("/bin/init.bin") {
-        panic!("Failed to execute `/bin/init.bin`: {error:#?}");
-    };
+    match BOOTFS.open("/bin/init.bin") {
+        Ok(file) => {
+            if let Err(error) = process::spawn(file) {
+                panic!("Failed to execute /bin/init.bin: {error}")
+            };
 
-    scheduler::activate();
+            prompt!();
 
-    prompt!();
+            scheduler::activate();
 
-    loop {
-        instructions::hlt();
+            loop {
+                instructions::hlt();
+            }
+        }
+        Err(error) => panic!("Failed to execute /bin/init.bin: {error}"),
     }
 }
 

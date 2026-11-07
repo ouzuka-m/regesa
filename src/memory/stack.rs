@@ -1,9 +1,13 @@
 use x86_64::{
     VirtAddr,
+    instructions::interrupts,
     structures::paging::{FrameAllocator, FrameDeallocator, PageSize, PhysFrame, Size4KiB},
 };
 
-use crate::memory::{address::PhysExt, frame_allocator::FRAME_ALLOCATOR};
+use crate::{
+    error::{Error, Result},
+    memory::{address::PhysExt, frame_allocator::FRAME_ALLOCATOR},
+};
 
 #[derive(Debug)]
 pub struct Stack {
@@ -12,15 +16,13 @@ pub struct Stack {
 }
 
 impl Stack {
-    pub fn alloc() -> Self {
-        let frame = FRAME_ALLOCATOR
-            .lock()
-            .allocate_frame()
-            .expect("Failed to allocate stack frame");
+    pub fn alloc() -> Result<Self> {
+        let frame = interrupts::without_interrupts(|| FRAME_ALLOCATOR.lock().allocate_frame())
+            .ok_or(Error::OutOfMemory)?;
 
         let top = frame.start_address().to_virt() + Size4KiB::SIZE;
 
-        Self { frame, top }
+        Ok(Self { frame, top })
     }
 
     pub fn deallocate(&self) {
