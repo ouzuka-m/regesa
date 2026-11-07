@@ -23,13 +23,15 @@ mod memory;
 mod process;
 mod qemu;
 mod scheduler;
-mod sse;
 mod x86_64;
 
 use ::x86_64::instructions::{self, interrupts};
 use core::panic::PanicInfo;
 
-use crate::fs::{bootfs::BOOTFS, filesystem::FileSystem};
+use crate::{
+    fs::{bootfs::BOOTFS, filesystem::FileSystem},
+    x86_64::sse,
+};
 
 use self::{
     display::greet,
