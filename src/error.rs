@@ -25,6 +25,7 @@ pub enum Error {
     /// A program segment (e.g., PT_LOAD) has invalid offset, size, or alignment.
     InvalidSegment,
 
+    // Program doesn't have any PHDRs.
     MissingProgramHeaders,
 }
 
