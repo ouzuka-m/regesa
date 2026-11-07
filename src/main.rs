@@ -23,6 +23,7 @@ mod memory;
 mod process;
 mod qemu;
 mod scheduler;
+mod sse;
 mod x86_64;
 
 use ::x86_64::instructions::{self, interrupts};
@@ -39,6 +40,8 @@ use self::{
 /// Kernel entry point called by the Limine bootloader.
 #[unsafe(no_mangle)]
 extern "C" fn _start() -> ! {
+    sse::init();
+
     // Disable CPU hardware interrupts during critical boot sequence
     interrupts::disable();
 
