@@ -124,7 +124,7 @@ regesa/
 │   ├── config/       Kernel configuration & memory metadata
 │   ├── display/      Framebuffer and text rendering
 │   ├── drivers/      Device drivers
-│   ├── fs/           TarFS boot filesystem implementation
+│   ├── fs/           Filesystems
 │   ├── log/          Kernel logging
 │   ├── memory/       Frame allocator, mapper, heap
 │   ├── process/      ELF loader & process spawning
@@ -132,8 +132,7 @@ regesa/
 │   ├── scheduler/    Scheduler and task management
 │   ├── x86_64/       x86_64 arch-specific code
 │   ├── error.rs       Unified kernel error types
-│   ├── main.rs       Kernel entry point
-│   └── sse.rs        SSE/FPU register initialization
+│   └── main.rs       Kernel entry point
 ├── targets/        Custom target specification (x86_64-unknown-none.json)
 ├── linker.ld       Linker script for kernel section layout
 ├── Cargo.toml      Package manifest and dependencies
