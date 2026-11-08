@@ -15,7 +15,7 @@ x86_64 = { version = "0.15", default-features = false, features = ["instructions
 spin = { version = "0.12", default-features = false, features = ["spin_mutex", "once", "lazylock"] }
 uart_16550 = "0.9"
 pc-keyboard = "0.9"
-noto-sans-mono-bitmap = { version = "0.3", default-features = false, features = ["size_20", "regular", "unicode-basic-latin"] }
+noto-sans-mono-bitmap = { version = "0.4", default-features = false, features = ["size_20", "regular", "unicode-basic-latin"] }
 buddy_system_allocator = { version = "0.13", default-features = false, features = ["use_spin"] }
 acpi = "6.1"
 elf = { version = "0.8", default-features = false }

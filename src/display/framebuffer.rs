@@ -138,15 +138,15 @@ impl Write for FrameBuffer {
 
         self.cells.push(Cell::new(start_x, start_y, glyph.width()));
 
-        let raster = glyph.raster();
+        let rows = glyph.rows();
 
-        for (row, pixels) in raster.iter().enumerate() {
-            for (col, intensity) in pixels.iter().enumerate() {
+        for (row, columns) in rows.enumerate() {
+            for (column, intensity) in columns.iter().enumerate() {
                 if *intensity == 0 {
                     continue;
                 }
 
-                let x = self.cursor_x + col;
+                let x = self.cursor_x + column;
                 let y = self.cursor_y + row;
 
                 if x >= self.width || y >= self.height {
