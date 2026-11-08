@@ -116,24 +116,28 @@ qemu-system-x86_64 \
 
 ```
 regesa/
-├── build/          Build scripts (debug.sh, release.sh)
 ├── iso/            ISO structure with Limine bootloader binaries
 ├── rootfs/         Root filesystem files packed into initramfs
-├── src/            Kernel source code
+├── scripts/        Build & environment setup scripts (build.sh)
+├── src/              Kernel source code
 │   ├── boot/         Boot initialization
+│   ├── config/       Kernel configuration & memory metadata
 │   ├── display/      Framebuffer and text rendering
 │   ├── drivers/      Device drivers
-│   ├── initramfs/    Initramfs parser and reader (tarfs)
+│   ├── fs/           TarFS boot filesystem implementation
 │   ├── log/          Kernel logging
 │   ├── memory/       Frame allocator, mapper, heap
+│   ├── process/      ELF loader & process spawning
 │   ├── qemu/         QEMU integration utilities
 │   ├── scheduler/    Scheduler and task management
 │   ├── x86_64/       x86_64 arch-specific code
-│   ├── config.rs     Kernel configuration
-│   └── main.rs       Kernel entry point
+│   ├── error.rs       Unified kernel error types
+│   ├── main.rs       Kernel entry point
+│   └── sse.rs        SSE/FPU register initialization
 ├── targets/        Custom target specification (x86_64-unknown-none.json)
 ├── linker.ld       Linker script for kernel section layout
 ├── Cargo.toml      Package manifest and dependencies
+├── README.md
 └── rust-toolchain.toml  Pinned nightly Rust toolchain
 ```
 
