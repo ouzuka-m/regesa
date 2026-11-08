@@ -1,6 +1,5 @@
 pub mod context;
-pub mod exit;
-pub mod idle;
+pub mod lifecycle;
 pub mod rflags;
 pub mod round_robin;
 pub mod state;

@@ -2,7 +2,12 @@ use crate::{
     error::{Error, Result},
     memory::stack::Stack,
     scheduler::{
-        context::Context, exit, idle, rflags::RFLAGS, state::State, switch::Switch, task::Task,
+        context::Context,
+        lifecycle::{exit, idle},
+        rflags::RFLAGS,
+        state::State,
+        switch::Switch,
+        task::Task,
     },
 };
 
