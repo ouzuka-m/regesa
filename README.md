@@ -159,4 +159,4 @@ Ready to contribute? Check out [CONTRIBUTING.md](CONTRIBUTING.md) for our detail
 
 ## License
 
-regesa is licensed under the [GNU General Public License v2.0 (GPL-2.0)](LICENSE).
+Regesa is licensed under the [GNU General Public License v2.0 (GPL-2.0)](LICENSE).
