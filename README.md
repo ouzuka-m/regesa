@@ -117,7 +117,7 @@ qemu-system-x86_64 \
 ```
 regesa/
 ├── iso/            ISO structure with Limine bootloader binaries
-├── rootfs/         Root filesystem files packed into initramfs
+├── initramfs/      Root filesystem files packed into initramfs
 ├── scripts/        Build & environment setup scripts (build.sh)
 ├── src/              Kernel source code
 │   ├── boot/         Boot initialization
