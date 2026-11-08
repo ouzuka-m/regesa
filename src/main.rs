@@ -29,7 +29,7 @@ use ::x86_64::instructions::{self, interrupts};
 use core::panic::PanicInfo;
 
 use crate::{
-    fs::{bootfs::BOOTFS, filesystem::FileSystem},
+    fs::{filesystem::FileSystem, initramfs::INITRAMFS},
     x86_64::sse,
 };
 
@@ -74,7 +74,7 @@ extern "C" fn _start() -> ! {
 
     qemu::exit::success();
 
-    match BOOTFS.open("/bin/init") {
+    match INITRAMFS.open("/bin/init") {
         Ok(file) => {
             if let Err(error) = process::spawn(file) {
                 panic!("Failed to execute /bin/init: {error}")

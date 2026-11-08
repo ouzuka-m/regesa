@@ -5,7 +5,10 @@ use crate::{
     fs::tar::{BLOCK, Entry, Tar},
 };
 
-pub static BOOTFS: LazyLock<Tar> = LazyLock::new(|| {
+// Skip the "initramfs" word from path. Example, "initramfs/bin/init" -> "/bin/init"
+const PATH_SKIP: usize = 9;
+
+pub static INITRAMFS: LazyLock<Tar> = LazyLock::new(|| {
     let module = MODULES
         .modules()
         .iter()
@@ -25,7 +28,7 @@ pub static BOOTFS: LazyLock<Tar> = LazyLock::new(|| {
             break;
         }
 
-        let name = str::from_utf8(&header_block[6..100])
+        let name = str::from_utf8(&header_block[PATH_SKIP..100])
             .expect("Failed to parse filename")
             .trim_matches('\0');
 

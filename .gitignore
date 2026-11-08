@@ -6,5 +6,5 @@ initramfs.tar
 *.bin
 *.o
 
-/rootfs/bin/*
-!/rootfs/bin/*.asm
+/initramfs/bin/*
+!/initramfs/bin/*.asm

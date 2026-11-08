@@ -41,7 +41,7 @@ if [ ! -f iso/boot/limine-uefi-cd.bin ]; then
     bash "$SCRIPT_DIR/install.sh"
 fi
 
-tar -cf iso/boot/initramfs.tar rootfs/*
+tar -cf iso/boot/initramfs.tar initramfs/*
 
 if [ "$MODE" = "release" ]; then
     cargo build --release
