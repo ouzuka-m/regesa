@@ -77,6 +77,8 @@ impl Task {
                 new_pml4[i] = current_pml4[i].clone();
             }
 
+            let mut mapper = mapper::from_pml4(new_pml4);
+
             for phdr in phdrs {
                 if phdr.p_type != PT_LOAD {
                     continue;
@@ -105,8 +107,6 @@ impl Task {
                     end_vaddr
                 });
                 let page_count = end_page - start_page + 1;
-
-                let mut mapper = mapper::from_pml4(new_pml4);
 
                 let data_ptr = elf_data
                     .segment_data(&phdr)
