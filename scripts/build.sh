@@ -33,6 +33,16 @@ if ! command -v xorriso >/dev/null 2>&1; then
     exit 1
 fi
 
+if ! command -v nasm >/dev/null 2>&1; then
+    echo "error: nasm is not installed or not available in PATH" >&2
+    exit 1
+fi
+
+if ! command -v ld >/dev/null 2>&1; then
+    echo "error: ld is not installed or not available in PATH" >&2
+    exit 1
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR/.."
 
@@ -40,6 +50,17 @@ if [ ! -f iso/boot/limine-uefi-cd.bin ]; then
     echo "limine-uefi-cd.bin not found, running install.sh..."
     bash "$SCRIPT_DIR/install.sh"
 fi
+
+echo "compiling binaries in initramfs/bin..."
+for asm_file in initramfs/bin/*.asm; do
+    [ -f "$asm_file" ] || continue
+    bin_name="${asm_file%.asm}"
+    obj_file="${asm_file%.asm}.o"
+    echo "  $asm_file -> $bin_name"
+    nasm -f elf64 "$asm_file" -o "$obj_file"
+    ld -m elf_x86_64 -nostdlib -static -s -Ttext=0x400000 -e _start "$obj_file" -o "$bin_name"
+    rm -f "$obj_file"
+done
 
 tar -cf iso/boot/initramfs.tar initramfs/*
 

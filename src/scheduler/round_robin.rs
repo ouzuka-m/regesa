@@ -1,14 +1,6 @@
 use crate::{
     error::{Error, Result},
-    memory::stack::Stack,
-    scheduler::{
-        context::Context,
-        lifecycle::{exit, idle},
-        rflags::RFLAGS,
-        state::State,
-        switch::Switch,
-        task::Task,
-    },
+    scheduler::{context::Context, lifecycle::idle, state::State, switch::Switch, task::Task},
 };
 
 #[derive(Debug)]
@@ -26,22 +18,9 @@ impl<const N: usize> RoundRobin<N> {
             first_run: true,
         };
 
-        let stack = Stack::alloc().expect("No usable memory");
-        let mut rsp = stack.top();
+        let task = Task::new_kernel(idle::idle).expect("Can't spawn the idle task");
 
-        rsp -= 8;
-        unsafe {
-            *(rsp.as_mut_ptr()) = (idle::idle as fn() -> !) as usize;
-        }
-
-        rsp -= 8;
-        unsafe {
-            *(rsp.as_mut_ptr()) = RFLAGS as usize;
-        }
-
-        let context = Context::new_rsp(rsp.as_u64());
-
-        scheduler.tasks[0] = Some(Task::new(context, stack));
+        scheduler.tasks[0] = Some(task);
 
         scheduler
     }
@@ -111,41 +90,13 @@ impl<const N: usize> RoundRobin<N> {
         Switch::None
     }
 
-    pub fn spawn(&mut self, entry: fn()) -> Result<usize> {
+    pub fn spawn(&mut self, task: Task) -> Result<usize> {
         if let Some(index) = self.tasks.iter().position(Option::is_none) {
-            let stack = Stack::alloc()?;
-            let mut rsp = stack.top();
-
-            rsp -= 8;
-            unsafe {
-                *(rsp.as_mut_ptr()) = (exit::exit as fn() -> !) as usize;
-            }
-
-            rsp -= 8;
-            unsafe {
-                *(rsp.as_mut_ptr()) = entry as usize;
-            }
-
-            rsp -= 8;
-            unsafe {
-                *(rsp.as_mut_ptr()) = RFLAGS as usize;
-            }
-
-            let context = Context::new_rsp(rsp.as_u64());
-
-            self.tasks[index] = Some(Task::new(context, stack));
+            self.tasks[index] = Some(task);
 
             return Ok(index);
         }
 
         Err(Error::ProcessLimitReached)
-    }
-
-    pub fn release_current(&mut self) {
-        if let Some(task) = self.tasks[self.current].as_ref() {
-            task.deallocate_stack();
-
-            self.tasks[self.current] = None;
-        }
     }
 }

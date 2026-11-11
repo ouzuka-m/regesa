@@ -26,10 +26,12 @@ impl Stack {
         Ok(Self { frame, top })
     }
 
+    #[allow(dead_code)]
     pub fn deallocate(&self) {
         unsafe { FRAME_ALLOCATOR.lock().deallocate_frame(self.frame()) };
     }
 
+    #[allow(dead_code)]
     pub const fn frame(&self) -> PhysFrame {
         self.frame
     }

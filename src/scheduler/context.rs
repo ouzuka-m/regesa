@@ -8,10 +8,11 @@ pub struct Context {
     pub rbx: u64,
     pub rbp: u64,
     pub rsp: u64,
+    pub cr3: u64,
 }
 
 impl Context {
-    pub const fn new_rsp(rsp: u64) -> Self {
+    pub const fn new(rsp: u64, cr3: u64) -> Self {
         Context {
             r15: 0,
             r14: 0,
@@ -20,6 +21,7 @@ impl Context {
             rbx: 0,
             rbp: 0,
             rsp,
+            cr3,
         }
     }
 }
@@ -34,6 +36,7 @@ impl core::fmt::Debug for Context {
             .field("rbx", &format_args!("{:#018x}", self.rbx))
             .field("rbp", &format_args!("{:#018x}", self.rbp))
             .field("rsp", &format_args!("{:#018x}", self.rsp))
+            .field("cr3", &format_args!("{:#018x}", self.cr3))
             .finish()
     }
 }
@@ -49,6 +52,9 @@ pub unsafe extern "C" fn launch(ctx: *const Context) {
         mov rbx, [rdi + 32]
         mov rbp, [rdi + 40]
         mov rsp, [rdi + 48]
+
+        mov rdx, [rdi + 56]
+        mov cr3, rdx
 
         popfq
 
@@ -78,6 +84,9 @@ pub unsafe extern "C" fn switch(old: *mut Context, new: *const Context) {
         mov rbx, [rsi + 32]
         mov rbp, [rsi + 40]
         mov rsp, [rsi + 48]
+
+        mov rdx, [rsi + 56]
+        mov cr3, rdx
 
         popfq
 

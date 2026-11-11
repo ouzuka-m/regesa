@@ -11,9 +11,11 @@ use spin::{lazylock::LazyLock, mutex::Mutex};
 
 use self::{round_robin::RoundRobin, switch::Switch};
 
+const N_TASKS: usize = 16;
+
 pub static SCHEDULER_ACTIVE: AtomicBool = AtomicBool::new(false);
 
-pub static SCHEDULER: LazyLock<Mutex<RoundRobin<255>>> =
+pub static SCHEDULER: LazyLock<Mutex<RoundRobin<N_TASKS>>> =
     LazyLock::new(|| Mutex::new(RoundRobin::new()));
 
 pub fn activate() {

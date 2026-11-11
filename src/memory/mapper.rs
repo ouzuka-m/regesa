@@ -4,7 +4,10 @@
 //! [`OffsetPageTable`] using the HHDM offset so the kernel can map and
 //! unmap virtual pages.
 
-use x86_64::{registers::control::Cr3, structures::paging::OffsetPageTable};
+use x86_64::{
+    registers::control::Cr3,
+    structures::paging::{OffsetPageTable, PageTable},
+};
 
 use crate::{boot::info::HHDM, memory::address::PhysExt};
 
@@ -23,4 +26,8 @@ pub fn current() -> OffsetPageTable<'static> {
 
         OffsetPageTable::new(level_4_table, *HHDM)
     }
+}
+
+pub fn from_pml4(level_4_table: &mut PageTable) -> OffsetPageTable<'_> {
+    unsafe { OffsetPageTable::new(level_4_table, *HHDM) }
 }
