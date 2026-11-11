@@ -19,7 +19,7 @@ jobs:
 
       - run: |
           sudo apt-get update
-          sudo apt-get install -y qemu-system-x86 xorriso ovmf
+          sudo apt-get install -y qemu-system-x86 xorriso ovmf nasm
 
       - name: Format
         run: cargo fmt --check
