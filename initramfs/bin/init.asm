@@ -1,3 +1,5 @@
+default rel
+
 section .rodata
     ; Test Read-Only segment (PF_R)
     magic_seed  dq 0x19450817CAFEBABE
