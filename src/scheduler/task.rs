@@ -226,7 +226,6 @@ impl Task {
 
             Ok(Self { context, state })
         } else {
-            error!("Missing program headers in ELF binary");
             Err(Error::MissingProgramHeaders)
         }
     }
