@@ -13,10 +13,10 @@ use self::{round_robin::RoundRobin, switch::Switch};
 
 const N_TASKS: usize = 16;
 
-pub static SCHEDULER_ACTIVE: AtomicBool = AtomicBool::new(false);
-
 pub static SCHEDULER: LazyLock<Mutex<RoundRobin<N_TASKS>>> =
     LazyLock::new(|| Mutex::new(RoundRobin::new()));
+
+static SCHEDULER_ACTIVE: AtomicBool = AtomicBool::new(false);
 
 pub fn activate() {
     SCHEDULER_ACTIVE.store(true, Ordering::Release);
