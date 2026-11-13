@@ -32,9 +32,6 @@ pub extern "x86-interrupt" fn spurious_vector_interrupt(_: InterruptStackFrame) 
 /// Triggered periodically by the APIC timer or PIT to drive OS scheduling
 /// and timekeeping tasks. Sends an EOI signal to the Local APIC upon completion.
 pub extern "x86-interrupt" fn timer(_: InterruptStackFrame) {
-    // Fix keyboard sometimes "die" when you spamming keys on startup
-    ps2_keyboard::clear_buffer();
-
     tsc_deadline::arm(CONFIG.tick_interval());
 
     lapic::eoi();

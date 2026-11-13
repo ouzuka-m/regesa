@@ -10,7 +10,7 @@ use spin::once::Once;
 use x86_64::{PhysAddr, VirtAddr};
 
 use crate::{
-    drivers::apic::lapic,
+    drivers::{apic::lapic, input::ps2_keyboard},
     info,
     memory::address::{PhysExt, VirtExt},
     x86_64::idt::KEYBOARD_VECTOR,
@@ -63,6 +63,9 @@ pub fn init(ioapic: &IoApic, overrides: &[InterruptSourceOverride]) {
     let low_value = KEYBOARD_VECTOR as u32;
 
     map_redtbl(low, high, low_value, high_value);
+
+    // Fix keyboard sometimes "die" when you spamming keys on startup
+    ps2_keyboard::clear_buffer();
 }
 
 /// Reads a 32-bit register value from te I/O APIC.
