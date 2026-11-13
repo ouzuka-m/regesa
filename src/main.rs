@@ -42,11 +42,13 @@ use self::{
 /// Kernel entry point called by the Limine bootloader.
 #[unsafe(no_mangle)]
 extern "C" fn _start() -> ! {
+    // Enable Streaming SIMD Extensions (SSE)
     sse::init();
 
     // Disable CPU hardware interrupts during critical boot sequence
     interrupts::disable();
 
+    // Initialize kernel configuration and early logger
     config::init();
 
     info!("Regesa Kernel starting...");
@@ -60,14 +62,16 @@ extern "C" fn _start() -> ! {
     // Set up the global buddy system heap allocator
     heap_allocator::init();
 
-    // Initialize all subsystems
+    // Initialize all device drivers and hardware subsystems
     drivers::init();
 
     // Greet to the screen
     greet::welcome();
 
+    // Initialize the cooperative/preemptive task scheduler
     scheduler::init();
 
+    // Enable CPU hardware interrupts for scheduling and timer ticks
     interrupts::enable();
 
     info!("Kernel initialized successfully");

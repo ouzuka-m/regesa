@@ -1,3 +1,8 @@
+//! Streaming SIMD Extensions (SSE) initialization.
+//!
+//! This module provides functionality to enable SSE instructions on x86_64
+//! by configuring the CR0 and CR4 control registers.
+
 use x86_64::registers::control::{Cr0, Cr0Flags, Cr4, Cr4Flags};
 
 pub fn init() {
