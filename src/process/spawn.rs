@@ -6,7 +6,7 @@ use crate::{
 use elf::{ElfBytes, endian::LittleEndian};
 
 pub fn spawn(file: &dyn File) -> Result<usize> {
-    let mut buffer = [0u8; 8192];
+    let mut buffer = [0u8; 16_384];
     file.read(&mut buffer)?;
 
     let elf_data =
