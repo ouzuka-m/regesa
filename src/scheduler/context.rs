@@ -86,11 +86,19 @@ pub unsafe extern "C" fn switch(old: *mut Context, new: *const Context) {
         mov rsp, [rsi + 48]
 
         mov rdx, [rsi + 56]
-        mov cr3, rdx
+        mov rax, cr3
 
-        popfq
+        cmp rax, rdx
+        jne 1f
+        jmp 2f
 
-        ret
+        1:
+            mov cr3, rdx
+            jmp 2f
+
+        2:
+            popfq
+            ret
         ",
     );
 }
