@@ -42,16 +42,16 @@ pub static FRAME_ALLOCATOR: LazyLock<Mutex<BitmapAllocator>> = LazyLock::new(|| 
         .max()
         .expect("Memory map is empty");
     let total_frames = (highest_addr).div_ceil(Size4KiB::SIZE) as usize;
-    let bitmap_bytes = total_frames.div_ceil(8);
+    let bitmap_bytes = total_frames.div_ceil(64);
 
     // SAFETY: The bitmap address is located within a validated usable memory region
     // reported by the bootloader and translated via the Higher-Half Direct Mapping (HHDM).
     // It is exclusively assigned to this allocator during kernel boot.
-    let bitmap: &'static mut [u8] = unsafe {
+    let bitmap: &'static mut [u64] = unsafe {
         &mut *core::ptr::slice_from_raw_parts_mut(bitmap_addr.as_mut_ptr(), bitmap_bytes)
     };
 
-    bitmap.fill(0xFF);
+    bitmap.fill(u64::MAX);
 
     for entry in entries {
         if entry.type_ != MEMMAP_USABLE {
@@ -62,8 +62,8 @@ pub static FRAME_ALLOCATOR: LazyLock<Mutex<BitmapAllocator>> = LazyLock::new(|| 
         let end_frame = ((entry.base + entry.length) / Size4KiB::SIZE) as usize;
 
         for frame in start_frame..end_frame {
-            let byte = frame / 8;
-            let bit = frame % 8;
+            let byte = frame / 64;
+            let bit = frame % 64;
 
             bitmap[byte] &= !(1 << bit);
         }
@@ -73,8 +73,8 @@ pub static FRAME_ALLOCATOR: LazyLock<Mutex<BitmapAllocator>> = LazyLock::new(|| 
     let end_frame = ((bitmap_base + bitmap_length) / Size4KiB::SIZE) as usize;
 
     for frame in start_frame..end_frame {
-        let byte = frame / 8;
-        let bit = frame % 8;
+        let byte = frame / 64;
+        let bit = frame % 64;
 
         bitmap[byte] |= 1 << bit;
     }
@@ -100,7 +100,7 @@ pub static FRAME_ALLOCATOR: LazyLock<Mutex<BitmapAllocator>> = LazyLock::new(|| 
 #[derive(Debug)]
 pub struct BitmapAllocator {
     /// Contiguous byte slice backing the frame allocation bitmap.
-    bitmap: &'static mut [u8],
+    bitmap: &'static mut [u64],
 }
 
 // SAFETY: `allocate_frame` only returns frames that are within valid usable memory
@@ -114,7 +114,7 @@ unsafe impl FrameAllocator<Size4KiB> for BitmapAllocator {
     /// if no free frames remain.
     fn allocate_frame(&mut self) -> Option<PhysFrame<Size4KiB>> {
         for (idx, byte) in self.bitmap.iter_mut().enumerate() {
-            if *byte == 0xFF {
+            if *byte == u64::MAX {
                 continue;
             }
 
@@ -122,7 +122,7 @@ unsafe impl FrameAllocator<Size4KiB> for BitmapAllocator {
 
             *byte |= 1 << bit;
 
-            let frame = idx * 8 + bit;
+            let frame = idx * 64 + bit;
 
             return Some(PhysFrame::containing_address(PhysAddr::new(
                 (frame * Size4KiB::SIZE as usize) as u64,
@@ -144,8 +144,8 @@ impl FrameDeallocator<Size4KiB> for BitmapAllocator {
     unsafe fn deallocate_frame(&mut self, frame: PhysFrame<Size4KiB>) {
         let frame = frame.start_address().as_usize() / Size4KiB::SIZE as usize;
 
-        let byte = frame / 8;
-        let bit = frame % 8;
+        let byte = frame / 64;
+        let bit = frame % 64;
 
         self.bitmap[byte] &= !(1 << bit);
     }
