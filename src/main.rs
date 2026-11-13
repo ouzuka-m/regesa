@@ -74,6 +74,8 @@ extern "C" fn _start() -> ! {
 
     qemu::exit::success();
 
+    info!("Executing `/bin/init` ...");
+
     match INITRAMFS.open("/bin/init") {
         Ok(file) => {
             if let Err(error) = process::spawn(file) {
