@@ -18,6 +18,7 @@ Regesa is an operating system kernel written in Rust, targeting x86_64 systems w
 ## Hardware Requirements
 
 - 64-bit Intel CPU with **TSC-Deadline** timer support
+- 2GB or more RAM
 - **UEFI** firmware (legacy BIOS is **not** supported)
 - **KVM** for virtualized testing (QEMU TCG is insufficient — TSC-Deadline is not fully emulated)
 
@@ -85,6 +86,7 @@ qemu-system-x86_64 \
   -bios /usr/share/edk2/x64/OVMF.fd \
   -cdrom regesa.iso \
   -cpu host \
+  -m 2G \
   -enable-kvm
 ```
 
@@ -96,6 +98,7 @@ qemu-system-x86_64 \
   -cdrom regesa.iso \
   -cpu host \
   -enable-kvm \
+  -m 2G \
   -serial stdio
 ```
 
