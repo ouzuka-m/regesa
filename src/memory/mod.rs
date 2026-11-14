@@ -6,5 +6,6 @@
 
 pub mod address;
 pub mod allocator;
+pub mod layout;
 pub mod mapper;
 pub mod stack;
