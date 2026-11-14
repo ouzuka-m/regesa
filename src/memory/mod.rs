@@ -5,7 +5,6 @@
 //! allocation, kernel heap allocation (buddy system), page table mapping, and stack allocation.
 
 pub mod address;
-pub mod frame_allocator;
-pub mod heap_allocator;
+pub mod allocator;
 pub mod mapper;
 pub mod stack;

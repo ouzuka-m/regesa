@@ -5,7 +5,7 @@ use x86_64::{
 
 use crate::{
     error::{Error, Result},
-    memory::{address::PhysExt, frame_allocator::FRAME_ALLOCATOR},
+    memory::{address::PhysExt, allocator::phys::PHYS_ALLOCATOR},
 };
 
 #[derive(Debug)]
@@ -16,7 +16,7 @@ pub struct Stack {
 
 impl Stack {
     pub fn alloc() -> Result<Self> {
-        let frame = FRAME_ALLOCATOR
+        let frame = PHYS_ALLOCATOR
             .lock()
             .allocate_frame()
             .ok_or(Error::OutOfMemory)?;
@@ -28,7 +28,7 @@ impl Stack {
 
     #[allow(dead_code)]
     pub fn deallocate(&self) {
-        unsafe { FRAME_ALLOCATOR.lock().deallocate_frame(self.frame()) };
+        unsafe { PHYS_ALLOCATOR.lock().deallocate_frame(self.frame()) };
     }
 
     #[allow(dead_code)]

@@ -35,7 +35,7 @@ use crate::{
 
 use self::{
     display::greet,
-    memory::heap_allocator,
+    memory::allocator::heap,
     x86_64::{gdt, idt},
 };
 
@@ -60,7 +60,7 @@ extern "C" fn _start() -> ! {
     idt::init();
 
     // Set up the global buddy system heap allocator
-    heap_allocator::init();
+    heap::init();
 
     // Initialize all device drivers and hardware subsystems
     drivers::init();

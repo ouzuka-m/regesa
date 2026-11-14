@@ -20,7 +20,7 @@ use x86_64::{
 
 use crate::{boot::info::ENTRIES, memory::address::PhysExt};
 
-pub static FRAME_ALLOCATOR: LazyLock<Mutex<BitmapAllocator>> = LazyLock::new(|| {
+pub static PHYS_ALLOCATOR: LazyLock<Mutex<BitmapAllocator>> = LazyLock::new(|| {
     let entries = *ENTRIES;
 
     let (bitmap_addr, bitmap_base, bitmap_length) = {

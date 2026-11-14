@@ -9,10 +9,10 @@ use x86_64::{
     structures::paging::{FrameAllocator, Mapper, Page, PageTableFlags, Size4KiB},
 };
 
-use crate::memory::{frame_allocator::FRAME_ALLOCATOR, mapper};
+use crate::memory::{allocator::phys::PHYS_ALLOCATOR, mapper};
 
 #[global_allocator]
-static ALLOCATOR: LockedHeap<33> = LockedHeap::empty();
+pub static HEAP_ALLOCATOR: LockedHeap<33> = LockedHeap::empty();
 
 pub const HEAP_START: usize = 0xFFFF_9000_0000_0000;
 pub const HEAP_SIZE: usize = 1024 * 1024; // 1 MB, 256 pages
@@ -32,7 +32,7 @@ pub fn init() {
         Page::range_inclusive(start_page, end_page)
     };
 
-    let mut frame_allocator = FRAME_ALLOCATOR.lock();
+    let mut frame_allocator = PHYS_ALLOCATOR.lock();
 
     for page in page_range {
         let frame = frame_allocator.allocate_frame().expect("No usable memory");
@@ -54,7 +54,7 @@ pub fn init() {
     // has just been identity-mapped to valid physical frames above, so it is
     // safe to hand this region to the buddy allocator.
     unsafe {
-        ALLOCATOR.lock().init(HEAP_START, HEAP_SIZE);
+        HEAP_ALLOCATOR.lock().init(HEAP_START, HEAP_SIZE);
     }
 
     crate::info!(

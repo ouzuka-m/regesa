@@ -16,7 +16,7 @@ use crate::{
     debug, error,
     error::{Error, Result},
     info,
-    memory::{address::PhysExt, frame_allocator::FRAME_ALLOCATOR, mapper, stack::Stack},
+    memory::{address::PhysExt, allocator::phys::PHYS_ALLOCATOR, mapper, stack::Stack},
     scheduler::{context::Context, lifecycle::exit, rflags::RFLAGS, state::State},
     warn,
 };
@@ -67,7 +67,7 @@ impl Task {
         }
 
         if let Some(phdrs) = elf_data.segments() {
-            let mut frame_allocator = FRAME_ALLOCATOR.lock();
+            let mut frame_allocator = PHYS_ALLOCATOR.lock();
 
             let new_frame = frame_allocator.allocate_frame().ok_or_else(|| {
                 error!("Failed to allocate PML4 frame for ELF task");
