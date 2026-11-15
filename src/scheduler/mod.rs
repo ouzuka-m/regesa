@@ -32,7 +32,7 @@ use spin::{lazylock::LazyLock, mutex::Mutex};
 
 use self::{round_robin::RoundRobin, switch::Switch};
 
-const N_TASKS: usize = 16;
+pub const N_TASKS: usize = 16;
 
 pub static SCHEDULER: LazyLock<Mutex<RoundRobin<N_TASKS>>> =
     LazyLock::new(|| Mutex::new(RoundRobin::new()));
