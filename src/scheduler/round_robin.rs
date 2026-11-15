@@ -18,7 +18,7 @@ impl<const N: usize> RoundRobin<N> {
             first_run: true,
         };
 
-        let task = Task::new_kernel(idle::idle).expect("Can't spawn the idle task");
+        let task = Task::new_kernel(idle::idle);
 
         scheduler.tasks[0] = Some(task);
 

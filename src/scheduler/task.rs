@@ -28,8 +28,8 @@ pub struct Task {
 }
 
 impl Task {
-    pub fn new_kernel(entry: fn() -> !) -> Result<Self> {
-        let stack = Stack::alloc()?;
+    pub fn new_kernel(entry: fn() -> !) -> Self {
+        let stack = Stack::alloc().expect("Failed to allocate stack for kernel task");
         let mut rsp = stack.top();
 
         rsp -= 8;
@@ -48,7 +48,7 @@ impl Task {
         let context = Context::new(rsp.as_u64(), cr3.as_u64());
         let state = State::Ready;
 
-        Ok(Self { context, state })
+        Self { context, state }
     }
 
     pub fn from_elf(elf_data: ElfBytes<LittleEndian>) -> Result<Self> {
