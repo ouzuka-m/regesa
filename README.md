@@ -28,6 +28,7 @@ Regesa is an operating system kernel written in Rust, targeting x86_64 systems w
 | ------------------------ | -------------------------------------- |
 | `rustc` + `cargo`        | Rust compiler and build system (nightly, pinned via `rust-toolchain.toml`) |
 | `xorriso`                | Creating bootable ISO images           |
+| `nasm`                   | Compiling .asm program(s)              |
 | `tar`                    | Packing the initial root filesystem    |
 | `qemu-system-x86_64`    | Running the kernel in a virtual machine |
 | OVMF                     | UEFI firmware for QEMU                 |
@@ -41,13 +42,13 @@ Regesa is an operating system kernel written in Rust, targeting x86_64 systems w
 ### Installing Prerequisites (Arch Linux)
 
 ```bash
-sudo pacman -S qemu-full xorriso edk2-ovmf
+sudo pacman -S qemu-full xorriso edk2-ovmf nasm
 ```
 
 ### Installing Prerequisites (Debian / Ubuntu)
 
 ```bash
-sudo apt install qemu-system-x86 xorriso ovmf
+sudo apt install qemu-system-x86 xorriso ovmf nasm
 ```
 
 Rust nightly is managed automatically via [`rust-toolchain.toml`](rust-toolchain.toml) — simply install [rustup](https://rustup.rs/) and the correct toolchain will be used.
