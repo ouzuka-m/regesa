@@ -3,16 +3,12 @@
 //! Provides functionality to enable the Local APIC, send End of Interrupt (EOI)
 //! signals, and query CPU APIC IDs via memory-mapped I/O (MMIO) registers.
 
-use core::ptr;
+use core::{ops::Add, ptr};
 
 use spin::once::Once;
 use x86_64::{PhysAddr, VirtAddr};
 
-use crate::{
-    debug, info,
-    memory::address::{PhysExt, VirtExt},
-    x86_64::idt::SVR_VECTOR,
-};
+use crate::{debug, info, memory::address::PhysExt, x86_64::idt::SVR_VECTOR};
 
 /// Offset for the Local APIC ID register.
 const LAPIC_ID_REG: u64 = 0x20;
@@ -89,18 +85,22 @@ pub fn configure_lvt(reg: u64, vector: u8, flags: u32) {
 /// Reads a 32-bit value from a Local APIC MMIO register.
 fn read(offset: u64) -> u32 {
     let base_address = base_address();
+    let src = base_address.add(offset).as_ptr::<u32>();
+
     // SAFETY: The base address originates from the ACPI MADT table and
     // is translated to a valid virtual address via the HHDM. The offsets
     // are well-known LAPIC register offsets within the 4 KiB MMIO page.
-    unsafe { ptr::read_volatile(base_address.offset(offset).as_ptr::<u32>()) }
+    unsafe { ptr::read_volatile(src) }
 }
 
 /// Writes a 32-bit value to a Local APIC MMIO register.
 fn write(offset: u64, value: u32) {
     let base_address = base_address();
+    let dst = base_address.add(offset).as_mut_ptr::<u32>();
+
     // SAFETY: Same as `read` — valid LAPIC MMIO region via HHDM.
     unsafe {
-        ptr::write_volatile(base_address.offset(offset).as_mut_ptr::<u32>(), value);
+        ptr::write_volatile(dst, value);
     }
 }
 

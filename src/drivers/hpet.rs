@@ -4,13 +4,13 @@
 //! perform busy-wait delays with nanosecond and millisecond granularity.
 //! Used during TSC calibration and any early-boot timing requirements.
 
-use core::ptr;
+use core::{ops::Add, ptr};
 
 use acpi::HpetInfo;
 use spin::once::Once;
 use x86_64::{PhysAddr, VirtAddr};
 
-use crate::memory::address::{PhysExt, VirtExt};
+use crate::memory::address::PhysExt;
 
 const CAP_ID: u64 = 0x000;
 const CONFIG: u64 = 0x010;
@@ -65,17 +65,21 @@ pub fn counter() -> u64 {
 /// Reads a 64-bit value from an HPET MMIO register.
 fn read(offset: u64) -> u64 {
     let base_address = base_address();
+    let src = base_address.add(offset).as_ptr::<u64>();
+
     // SAFETY: The base address is set from the ACPI HPET table during init
     // and the register offsets are within the HPET MMIO region.
-    unsafe { ptr::read_volatile(base_address.offset(offset).as_ptr::<u64>()) }
+    unsafe { ptr::read_volatile(src) }
 }
 
 /// Writes a 64-bit value to an HPET MMIO register.
 fn write(offset: u64, value: u64) {
     let base_address = base_address();
+    let dst = base_address.add(offset).as_mut_ptr::<u64>();
+
     // SAFETY: The base address is set from the ACPI HPET table during init
     // and the register offsets are within the HPET MMIO region.
-    unsafe { ptr::write_volatile(base_address.offset(offset).as_mut_ptr::<u64>(), value) }
+    unsafe { ptr::write_volatile(dst, value) }
 }
 
 fn base_address() -> VirtAddr {

@@ -5,14 +5,14 @@
 //! and program I/O Redirection Table entries (IOREDTBL).
 
 use acpi::platform::interrupt::{InterruptSourceOverride, IoApic};
-use core::ptr;
+use core::{ops::Add, ptr};
 use spin::once::Once;
 use x86_64::{PhysAddr, VirtAddr};
 
 use crate::{
     drivers::{apic::lapic, input::ps2_keyboard},
     info,
-    memory::address::{PhysExt, VirtExt},
+    memory::address::PhysExt,
     x86_64::idt::KEYBOARD_VECTOR,
 };
 
@@ -74,8 +74,8 @@ pub fn init(ioapic: &IoApic, overrides: &[InterruptSourceOverride]) {
 fn read(reg: u32) -> u32 {
     let base_address = base_address();
 
-    let ioregsel: *mut u32 = base_address.offset(IOREGSEL).as_mut_ptr();
-    let iowin: *const u32 = base_address.offset(IOWIN).as_ptr();
+    let ioregsel: *mut u32 = base_address.add(IOREGSEL).as_mut_ptr();
+    let iowin: *const u32 = base_address.add(IOWIN).as_ptr();
 
     // SAFETY: The I/O APIC base address comes from the ACPI MADT and is
     // mapped via the HHDM. IOREGSEL and IOWIN are at fixed offsets 0x00

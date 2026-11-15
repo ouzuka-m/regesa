@@ -4,13 +4,12 @@
 //! Dedicated stacks are allocated for critical exceptions (Double Fault, Non-Maskable Interrupt,
 //! and Machine Check Exception) to prevent stack overflow cascading into a hardware triple fault.
 
+use core::ops::Add;
+
 use spin::lazylock::LazyLock;
 use x86_64::{VirtAddr, structures::tss::TaskStateSegment};
 
-use crate::{
-    memory::address::VirtExt,
-    x86_64::ist::{self, Stack},
-};
+use crate::x86_64::ist::{self, Stack};
 
 pub static TASK_STATE_SEGMENT: LazyLock<TaskStateSegment> = LazyLock::new(|| {
     let mut tss = TaskStateSegment::new();
@@ -23,5 +22,5 @@ pub static TASK_STATE_SEGMENT: LazyLock<TaskStateSegment> = LazyLock::new(|| {
 });
 
 fn stack_end(stack_ptr: *const Stack) -> VirtAddr {
-    VirtAddr::from_ptr(stack_ptr).offset(ist::STACK_SIZE as u64)
+    VirtAddr::from_ptr(stack_ptr).add(ist::STACK_SIZE as u64)
 }

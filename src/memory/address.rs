@@ -20,9 +20,6 @@ pub trait PhysExt {
 pub trait VirtExt {
     /// Translates a higher-half virtual address back to its physical address.
     fn to_phys(&self) -> PhysAddr;
-
-    /// Returns a new virtual address offset by `offset` bytes.
-    fn offset(&self, offset: u64) -> VirtAddr;
 }
 
 impl PhysExt for PhysAddr {
@@ -48,9 +45,5 @@ impl VirtExt for VirtAddr {
             .expect("Conversion to physical address causes underflow");
 
         PhysAddr::new(addr)
-    }
-
-    fn offset(&self, offset: u64) -> VirtAddr {
-        VirtAddr::new(self.as_u64() + offset)
     }
 }
