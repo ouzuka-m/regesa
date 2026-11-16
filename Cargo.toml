@@ -6,8 +6,8 @@ edition = "2024"
 license = "GPL-2.0"
 readme = "README.md"
 repository = "https://github.com/ouzuka-m/regesa"
-keywords = ["no-std", "rust", "memory", "kernel", "embedded"]
-categories = ["os", "no-std", "memory-management", "filesystem", "embedded"]
+keywords = ["no-std", "rust", "memory", "kernel"]
+categories = ["os", "no-std", "memory-management", "filesystem"]
 
 [dependencies]
 limine = "0.6"
