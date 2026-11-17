@@ -12,7 +12,7 @@ use crate::{
 use spin::lazylock::LazyLock;
 use tick::TickInterval;
 
-pub static CONFIG: LazyLock<Config> = LazyLock::new(|| Config::parse(*CMDLINE));
+static CONFIG: LazyLock<Config> = LazyLock::new(|| Config::parse(*CMDLINE));
 
 #[derive(Debug)]
 pub struct Config {
@@ -61,18 +61,18 @@ impl Config {
             _ => panic!("Invalid log_level value. Available option: debug, info, warn, error"),
         }
     }
-
-    pub const fn log_level(&self) -> Level {
-        self.log_level
-    }
-
-    pub const fn tick_interval(&self) -> TickInterval {
-        self.tick_interval
-    }
 }
 
-pub fn init() {
+pub(crate) fn init() {
     let config = &*CONFIG;
 
-    level::set_level(config.log_level());
+    level::set_level(config.log_level);
+}
+
+// pub fn log_level() -> Level {
+//     CONFIG.log_level
+// }
+
+pub fn tick_interval() -> TickInterval {
+    CONFIG.tick_interval
 }

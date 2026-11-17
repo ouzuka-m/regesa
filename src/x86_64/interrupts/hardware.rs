@@ -10,7 +10,7 @@ use spin::mutex::Mutex;
 use x86_64::{instructions::interrupts, structures::idt::InterruptStackFrame};
 
 use crate::{
-    config::CONFIG,
+    config,
     drivers::{apic::lapic, input::ps2_keyboard, tsc_deadline},
     print, scheduler, warn,
     x86_64::idt::READ_COMMAND_VECTOR,
@@ -32,7 +32,7 @@ pub extern "x86-interrupt" fn spurious_vector_interrupt(_: InterruptStackFrame) 
 /// Triggered periodically by the APIC timer or PIT to drive OS scheduling
 /// and timekeeping tasks. Sends an EOI signal to the Local APIC upon completion.
 pub extern "x86-interrupt" fn timer(_: InterruptStackFrame) {
-    tsc_deadline::arm(CONFIG.tick_interval());
+    tsc_deadline::arm(config::tick_interval());
 
     lapic::eoi();
 
