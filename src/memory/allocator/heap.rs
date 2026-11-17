@@ -16,7 +16,7 @@ use crate::memory::{
 };
 
 #[global_allocator]
-pub static HEAP_ALLOCATOR: LockedHeap<33> = LockedHeap::empty();
+static HEAP_ALLOCATOR: LockedHeap<33> = LockedHeap::empty();
 
 pub fn init() {
     let page_range = {
