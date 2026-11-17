@@ -12,15 +12,19 @@
 //! crate to integrate with virtual memory paging subsystems.
 
 use limine::memmap::MEMMAP_USABLE;
-use spin::{lazylock::LazyLock, mutex::Mutex};
+use spin::{MutexGuard, lazylock::LazyLock, mutex::Mutex};
 use x86_64::{
     PhysAddr,
     structures::paging::{FrameAllocator, FrameDeallocator, PageSize, PhysFrame, Size4KiB},
 };
 
-use crate::{boot::info::ENTRIES, memory::address::PhysExt};
+use crate::{
+    boot::info::ENTRIES,
+    error::{Error, Result},
+    memory::address::PhysExt,
+};
 
-pub static PHYS_ALLOCATOR: LazyLock<Mutex<BitmapAllocator>> = LazyLock::new(|| {
+static PHYS_ALLOCATOR: LazyLock<Mutex<BitmapAllocator>> = LazyLock::new(|| {
     let entries = *ENTRIES;
 
     let (bitmap_addr, bitmap_base, bitmap_length) = {
@@ -149,4 +153,20 @@ impl FrameDeallocator<Size4KiB> for BitmapAllocator {
 
         self.bitmap[byte] &= !(1 << bit);
     }
+}
+
+pub(crate) fn lock() -> MutexGuard<'static, BitmapAllocator> {
+    PHYS_ALLOCATOR.lock()
+}
+
+pub fn allocate() -> Result<PhysFrame> {
+    PHYS_ALLOCATOR
+        .lock()
+        .allocate_frame()
+        .ok_or(Error::OutOfMemory)
+}
+
+#[allow(dead_code)]
+pub fn deallocate(frame: PhysFrame) {
+    unsafe { PHYS_ALLOCATOR.lock().deallocate_frame(frame) };
 }

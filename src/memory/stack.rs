@@ -1,39 +1,25 @@
 use x86_64::{
     VirtAddr,
-    structures::paging::{FrameAllocator, FrameDeallocator, PageSize, PhysFrame, Size4KiB},
+    structures::paging::{PageSize, Size4KiB},
 };
 
 use crate::{
-    error::{Error, Result},
-    memory::{address::PhysExt, allocator::phys::PHYS_ALLOCATOR},
+    error::Result,
+    memory::{address::PhysExt, allocator},
 };
 
 #[derive(Debug)]
 pub struct Stack {
-    frame: PhysFrame,
     top: VirtAddr,
 }
 
 impl Stack {
     pub fn alloc() -> Result<Self> {
-        let frame = PHYS_ALLOCATOR
-            .lock()
-            .allocate_frame()
-            .ok_or(Error::OutOfMemory)?;
+        let frame = allocator::phys::allocate()?;
 
         let top = frame.start_address().to_virt() + Size4KiB::SIZE;
 
-        Ok(Self { frame, top })
-    }
-
-    #[allow(dead_code)]
-    pub fn deallocate(&self) {
-        unsafe { PHYS_ALLOCATOR.lock().deallocate_frame(self.frame()) };
-    }
-
-    #[allow(dead_code)]
-    pub const fn frame(&self) -> PhysFrame {
-        self.frame
+        Ok(Self { top })
     }
 
     pub const fn top(&self) -> VirtAddr {

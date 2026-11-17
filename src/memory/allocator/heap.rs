@@ -10,7 +10,7 @@ use x86_64::{
 };
 
 use crate::memory::{
-    allocator::phys::PHYS_ALLOCATOR,
+    allocator,
     layout::{HEAP_END, HEAP_SIZE, HEAP_START},
     mapper,
 };
@@ -30,7 +30,7 @@ pub fn init() {
     };
 
     let mut mapper = mapper::current();
-    let mut frame_allocator = PHYS_ALLOCATOR.lock();
+    let mut frame_allocator = allocator::phys::lock();
 
     for page in page_range {
         let frame = frame_allocator.allocate_frame().expect("No usable memory");
