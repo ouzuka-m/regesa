@@ -110,12 +110,18 @@ impl Task {
                     p_vaddr, p_filesz, p_memsz, p_flags
                 );
 
-                let mut flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
+                let mut flags = PageTableFlags::PRESENT | PageTableFlags::USER_ACCESSIBLE;
+
+                if p_flags & 2 != 0 {
+                    flags |= PageTableFlags::WRITABLE;
+                }
 
                 if p_flags & 1 == 0 {
                     flags |= PageTableFlags::NO_EXECUTE;
+                }
 
-                    warn!("Loading RWX segment! This is insecure, W^X violated");
+                if p_flags & 3 == 3 {
+                    warn!("Loading RWX segment! W^X violated");
                 }
 
                 let start_page = Page::<Size4KiB>::containing_address(VirtAddr::new(p_vaddr));
