@@ -18,17 +18,16 @@ pub enum Error {
     NotFound,
 
     /// ELF isn't a valid executable.
-    ELFParser {
-        context: ParseError,
-    },
+    ELFParser { context: ParseError },
 
-    /// ELF isn't supported format
+    /// ELF isn't supported format.
     UnsupportedElfFormat {
         e_type: u16,
         e_class: Class,
         e_machine: u16,
     },
 
+    /// ELF doesn't have program headers.
     MissingProgramHeaders,
 
     // -- Memory --
