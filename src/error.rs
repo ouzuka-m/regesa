@@ -1,7 +1,13 @@
 use core::fmt;
 
+use elf::{ParseError, file::Class};
+use x86_64::{
+    PhysAddr, VirtAddr,
+    structures::paging::{Size4KiB, mapper::MapToError},
+};
+
 /// Errors that can occur when loading and spawning a new process/executable.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug)]
 pub enum Error {
     // --- Scheduler / Process Manager ---
     /// The process table or scheduler queue is full. Cannot spawn more processes.
@@ -11,35 +17,67 @@ pub enum Error {
     /// The requested file or path does not exist.
     NotFound,
 
-    /// The file exists but is not a valid executable format (bad magic, not ELF, etc.).
-    NotExecutable,
+    /// ELF isn't a valid executable.
+    ELFParser {
+        context: ParseError,
+    },
 
+    /// ELF isn't supported format
+    UnsupportedElfFormat {
+        e_type: u16,
+        e_class: Class,
+        e_machine: u16,
+    },
+
+    MissingProgramHeaders,
+
+    // -- Memory --
     /// The file exists but there is no usable memory region to load it into.
     /// Usually means RAM is fragmented or all regions are reserved.
     OutOfMemory,
 
     /// Failed to map the executable's segments into virtual memory.
     /// Happens when page table allocation or permission setup fails.
-    MemoryMapFailed,
-
-    /// A program segment (e.g., PT_LOAD) has invalid offset, size, or alignment.
-    InvalidSegment,
-
-    // Program doesn't have any PHDRs.
-    MissingProgramHeaders,
+    MemoryMapFailed {
+        page_addr: VirtAddr,
+        frame_addr: PhysAddr,
+        context: MapToError<Size4KiB>,
+    },
 }
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::ProcessLimitReached => write!(f, "process limit reached: scheduler is full"),
-            Self::NotFound => write!(f, "file not found"),
-            Self::NotExecutable => write!(f, "file is not a valid executable"),
-            Self::OutOfMemory => write!(f, "not enough usable memory to load executable"),
-            Self::MemoryMapFailed => write!(f, "failed to map executable into memory"),
-            Self::InvalidSegment => write!(f, "executable contains invalid segment data"),
-            Self::MissingProgramHeaders => write!(f, "executable doesn't have program headers"),
+            Self::ProcessLimitReached => write!(f, "Process limit reached"),
+            Self::NotFound => write!(f, "File not found"),
+            Self::ELFParser { context } => write!(f, "File is not a valid executable: {context}"),
+            Self::UnsupportedElfFormat {
+                e_type,
+                e_class,
+                e_machine,
+            } => write!(
+                f,
+                "Unsupported ELF Format: e_type={:?}, class={:?}, e_machine={:?}",
+                e_type, e_class, e_machine
+            ),
+            Self::MissingProgramHeaders => write!(f, "Executable doesn't have program headers"),
+            Self::OutOfMemory => write!(f, "Not enough usable memory to load executable"),
+            Self::MemoryMapFailed {
+                page_addr,
+                frame_addr,
+                context,
+            } => write!(
+                f,
+                "Failed to map page {:?} to frame {:?}: {:?}",
+                page_addr, frame_addr, context
+            ),
         }
+    }
+}
+
+impl From<ParseError> for Error {
+    fn from(value: ParseError) -> Self {
+        Self::ELFParser { context: value }
     }
 }
 

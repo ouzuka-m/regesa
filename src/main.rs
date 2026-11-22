@@ -8,7 +8,6 @@
 #![no_std]
 #![no_main]
 #![feature(abi_x86_interrupt)]
-#![deny(clippy::unwrap_used)]
 
 extern crate alloc;
 

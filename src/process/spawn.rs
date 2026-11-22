@@ -1,5 +1,5 @@
 use crate::{
-    error::{Error, Result},
+    error::Result,
     fs::file::File,
     scheduler::{SCHEDULER, task::Task},
 };
@@ -9,8 +9,7 @@ pub fn spawn(file: &dyn File) -> Result<usize> {
     let mut buffer = [0u8; 16_384];
     file.read(&mut buffer)?;
 
-    let elf_data =
-        ElfBytes::<LittleEndian>::minimal_parse(&buffer).map_err(|_| Error::NotExecutable)?;
+    let elf_data = ElfBytes::<LittleEndian>::minimal_parse(&buffer)?;
 
     let task = Task::from_elf(elf_data)?;
 

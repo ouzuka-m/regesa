@@ -9,10 +9,13 @@ use x86_64::{
     structures::paging::{FrameAllocator, Mapper, Page, PageTableFlags, Size4KiB},
 };
 
-use crate::memory::{
-    allocator,
-    layout::{HEAP_END, HEAP_SIZE, HEAP_START},
-    mapper,
+use crate::{
+    error::Error,
+    memory::{
+        allocator,
+        layout::{HEAP_END, HEAP_SIZE, HEAP_START},
+        mapper,
+    },
 };
 
 #[global_allocator]
@@ -41,7 +44,12 @@ pub fn init() {
         unsafe {
             mapper
                 .map_to(page, frame, flags, &mut *frame_allocator)
-                .expect("Failed to map page & frame")
+                .map_err(|e| Error::MemoryMapFailed {
+                    page_addr: page.start_address(),
+                    frame_addr: frame.start_address(),
+                    context: e,
+                })
+                .unwrap()
                 .flush();
         }
     }

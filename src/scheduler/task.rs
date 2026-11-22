@@ -13,7 +13,7 @@ use x86_64::{
 };
 
 use crate::{
-    debug, error,
+    debug,
     error::{Error, Result},
     info,
     memory::{address::PhysExt, allocator, mapper, stack::Stack},
@@ -59,20 +59,17 @@ impl Task {
 
         let ehdr = elf_data.ehdr;
         if ehdr.e_type != ET_EXEC || ehdr.class != ELF64 || ehdr.e_machine != EM_X86_64 {
-            error!(
-                "Invalid ELF header: e_type={:?}, class={:?}, e_machine={:?}",
-                ehdr.e_type, ehdr.class, ehdr.e_machine
-            );
-            return Err(Error::NotExecutable);
+            return Err(Error::UnsupportedElfFormat {
+                e_type: ehdr.e_type,
+                e_class: ehdr.class,
+                e_machine: ehdr.e_machine,
+            });
         }
 
         if let Some(phdrs) = elf_data.segments() {
             let mut frame_allocator = allocator::phys::lock();
 
-            let new_frame = frame_allocator.allocate_frame().ok_or_else(|| {
-                error!("Failed to allocate PML4 frame for ELF task");
-                Error::OutOfMemory
-            })?;
+            let new_frame = frame_allocator.allocate_frame().ok_or(Error::OutOfMemory)?;
 
             let new_frame_addr = new_frame.start_address();
             debug!("Allocated new PML4 frame at {:#x}", new_frame_addr.as_u64());
@@ -141,35 +138,19 @@ impl Task {
                     end_page.start_address()
                 );
 
-                let data_ptr = elf_data
-                    .segment_data(&phdr)
-                    .map_err(|e| {
-                        error!("Failed to get segment data: {:?}", e);
-                        Error::InvalidSegment
-                    })?
-                    .as_ptr();
+                let data_ptr = elf_data.segment_data(&phdr)?.as_ptr();
 
                 for i in 0..page_count {
                     let page = start_page + i;
-                    let frame = frame_allocator.allocate_frame().ok_or_else(|| {
-                        error!(
-                            "Failed to allocate physical frame for page {:?}",
-                            page.start_address()
-                        );
-                        Error::OutOfMemory
-                    })?;
+                    let frame = frame_allocator.allocate_frame().ok_or(Error::OutOfMemory)?;
 
                     unsafe {
                         mapper
                             .map_to(page, frame, flags, &mut *frame_allocator)
-                            .map_err(|e| {
-                                error!(
-                                    "Failed to map page {:?} to frame {:?}: {:?}",
-                                    page.start_address(),
-                                    frame.start_address(),
-                                    e
-                                );
-                                Error::MemoryMapFailed
+                            .map_err(|e| Error::MemoryMapFailed {
+                                page_addr: page.start_address(),
+                                frame_addr: frame.start_address(),
+                                context: e,
                             })?
                             .ignore();
                     }
@@ -200,9 +181,7 @@ impl Task {
 
             let entry: extern "C" fn() = unsafe { core::mem::transmute(ehdr.e_entry) };
 
-            let stack = Stack::alloc().inspect_err(|e| {
-                error!("Failed to allocate stack for ELF task: {:?}", e);
-            })?;
+            let stack = Stack::alloc()?;
             let mut rsp = stack.top();
 
             rsp -= 8;
