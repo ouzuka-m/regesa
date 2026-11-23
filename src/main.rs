@@ -79,21 +79,18 @@ extern "C" fn _start() -> ! {
 
     info!("Executing `/bin/init` ...");
 
-    match INITRAMFS.open("/bin/init") {
-        Ok(file) => {
-            if let Err(error) = process::spawn(file) {
-                panic!("Failed to execute /bin/init: {error}")
-            };
+    let init = INITRAMFS
+        .open("/bin/init")
+        .expect("Failed to open /bin/init");
 
-            prompt!();
+    process::spawn(init).expect("Failed to spawn /bin/init");
 
-            scheduler::activate();
+    prompt!();
 
-            loop {
-                instructions::hlt();
-            }
-        }
-        Err(error) => panic!("Failed to execute /bin/init: {error}"),
+    scheduler::activate();
+
+    loop {
+        instructions::hlt();
     }
 }
 
