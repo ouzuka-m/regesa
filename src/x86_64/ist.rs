@@ -16,6 +16,8 @@ pub static mut DF_STACK: Stack = Stack([0; STACK_SIZE]);
 pub static mut NMI_STACK: Stack = Stack([0; STACK_SIZE]);
 pub static mut MCE_STACK: Stack = Stack([0; STACK_SIZE]);
 
+pub static mut KERNEL_STACK: Stack = Stack([0; STACK_SIZE]);
+
 /// IST index for the Double Fault (#DF) exception stack.
 pub const DF_INDEX: u16 = 0;
 
@@ -24,3 +26,6 @@ pub const NMI_INDEX: u16 = 1;
 
 /// IST index for the Machine Check Exception (#MC) stack.
 pub const MCE_INDEX: u16 = 2;
+
+/// Kernel stack for RSP0
+pub const KERNEL_INDEX: u16 = 0;

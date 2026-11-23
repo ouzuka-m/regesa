@@ -14,6 +14,8 @@ use crate::x86_64::ist::{self, Stack};
 pub static TASK_STATE_SEGMENT: LazyLock<TaskStateSegment> = LazyLock::new(|| {
     let mut tss = TaskStateSegment::new();
 
+    tss.privilege_stack_table[ist::KERNEL_INDEX as usize] = stack_end(&raw const ist::KERNEL_STACK);
+
     tss.interrupt_stack_table[ist::DF_INDEX as usize] = stack_end(&raw const ist::DF_STACK);
     tss.interrupt_stack_table[ist::NMI_INDEX as usize] = stack_end(&raw const ist::NMI_STACK);
     tss.interrupt_stack_table[ist::MCE_INDEX as usize] = stack_end(&raw const ist::MCE_STACK);
