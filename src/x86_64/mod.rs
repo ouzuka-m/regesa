@@ -8,5 +8,9 @@ pub mod gdt;
 pub mod idt;
 pub mod interrupts;
 pub mod ist;
+
+#[allow(dead_code)]
+pub mod segments;
+
 pub mod sse;
 pub mod tss;

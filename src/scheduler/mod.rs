@@ -21,6 +21,10 @@
 
 pub mod context;
 pub mod lifecycle;
+
+#[allow(dead_code)]
+pub mod privilege;
+
 pub mod rflags;
 pub mod round_robin;
 pub mod state;
