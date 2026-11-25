@@ -28,7 +28,7 @@ pub struct Task {
 }
 
 impl Task {
-    pub fn new_kernel(entry: fn() -> !) -> Self {
+    pub fn from_entry(entry: fn() -> !) -> Self {
         let stack = Stack::alloc().expect("Failed to allocate stack for kernel task");
         let mut rsp = stack.top();
 

@@ -18,7 +18,7 @@ impl<const N: usize> RoundRobin<N> {
             first_run: true,
         };
 
-        let task = Task::new_kernel(idle::idle);
+        let task = Task::from_entry(idle::idle);
 
         scheduler.tasks[0] = Some(task);
 
