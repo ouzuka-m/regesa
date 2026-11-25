@@ -5,7 +5,7 @@ use elf::{
     file::Class::ELF64,
 };
 use x86_64::{
-    VirtAddr,
+    PrivilegeLevel, VirtAddr,
     registers::control::Cr3,
     structures::paging::{
         FrameAllocator, Mapper, Page, PageSize, PageTable, PageTableFlags, Size4KiB,
@@ -25,6 +25,9 @@ use crate::{
 pub struct Task {
     pub context: Context,
     pub state: State,
+
+    #[allow(dead_code)]
+    pub privilege: PrivilegeLevel, // Either ring 0 or ring 3
 }
 
 impl Task {
@@ -47,15 +50,24 @@ impl Task {
 
         let context = Context::new(rsp.as_u64(), cr3.as_u64());
         let state = State::Ready;
+        let privilege = PrivilegeLevel::Ring0;
 
-        Self { context, state }
+        Self {
+            context,
+            state,
+            privilege,
+        }
     }
 
-    pub fn from_elf(elf_data: ElfBytes<LittleEndian>) -> Result<Self> {
+    pub fn from_elf(elf_data: ElfBytes<LittleEndian>, privilege: PrivilegeLevel) -> Result<Self> {
         info!(
             "Loading ELF binary (entry point: {:#x})",
             elf_data.ehdr.e_entry
         );
+
+        if privilege == PrivilegeLevel::Ring1 || privilege == PrivilegeLevel::Ring2 {
+            return Err(Error::UnsupportedPrivilege);
+        }
 
         let ehdr = elf_data.ehdr;
         if ehdr.e_type != ET_EXEC || ehdr.class != ELF64 || ehdr.e_machine != EM_X86_64 {
@@ -209,7 +221,11 @@ impl Task {
                 new_frame_addr.as_u64()
             );
 
-            Ok(Self { context, state })
+            Ok(Self {
+                context,
+                state,
+                privilege,
+            })
         } else {
             Err(Error::MissingProgramHeaders)
         }

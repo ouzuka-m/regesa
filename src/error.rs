@@ -30,6 +30,9 @@ pub enum Error {
     /// ELF doesn't have program headers.
     MissingProgramHeaders,
 
+    /// Trying using either ring 1 or ring 2 privilege
+    UnsupportedPrivilege,
+
     // -- Memory --
     /// The file exists but there is no usable memory region to load it into.
     /// Usually means RAM is fragmented or all regions are reserved.
@@ -60,6 +63,7 @@ impl fmt::Display for Error {
                 e_type, e_class, e_machine
             ),
             Self::MissingProgramHeaders => write!(f, "Executable doesn't have program headers"),
+            Self::UnsupportedPrivilege => write!(f, "No support for ring 1 and ring 2"),
             Self::OutOfMemory => write!(f, "Not enough usable memory to load executable"),
             Self::MemoryMapFailed {
                 page_addr,

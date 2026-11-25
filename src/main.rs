@@ -24,7 +24,10 @@ mod qemu;
 mod scheduler;
 mod x86_64;
 
-use ::x86_64::instructions::{self, interrupts};
+use ::x86_64::{
+    PrivilegeLevel,
+    instructions::{self, interrupts},
+};
 use core::panic::PanicInfo;
 
 use crate::{
@@ -83,7 +86,7 @@ extern "C" fn _start() -> ! {
         .open("/bin/init")
         .expect("Failed to open /bin/init");
 
-    process::spawn(init).expect("Failed to spawn /bin/init");
+    process::spawn(init, PrivilegeLevel::Ring0).expect("Failed to spawn /bin/init");
 
     prompt!();
 
