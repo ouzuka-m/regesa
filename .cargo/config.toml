@@ -10,3 +10,8 @@ target = "targets/x86_64-unknown-none.json"
 rustflags = [
     "-C", "link-arg=-Tlinker.ld",
 ]
+
+[alias]
+b = "build"
+c = "clippy"
+r = "run"
