@@ -56,9 +56,7 @@ pub unsafe extern "C" fn launch(ctx: *const Context) {
         mov rdx, [rdi + 56]
         mov cr3, rdx
 
-        popfq
-
-        ret
+        iretq
         ",
     );
 }
@@ -67,8 +65,6 @@ pub unsafe extern "C" fn launch(ctx: *const Context) {
 pub unsafe extern "C" fn switch(old: *mut Context, new: *const Context) {
     core::arch::naked_asm!(
         "
-        pushfq
-
         mov [rdi + 0], r15
         mov [rdi + 8], r14
         mov [rdi + 16], r13
@@ -97,8 +93,7 @@ pub unsafe extern "C" fn switch(old: *mut Context, new: *const Context) {
             jmp 2f
 
         2:
-            popfq
-            ret
+            iretq
         ",
     );
 }

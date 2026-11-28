@@ -7,12 +7,11 @@
 use core::arch::x86_64::__cpuid;
 
 use spin::once::Once;
-use x86_64::registers::model_specific::Msr;
 
 use crate::{
     config::tick::TickInterval,
     drivers::{hpet, lapic},
-    x86_64::idt::TIMER_VECTOR,
+    x86_64::{idt::TIMER_VECTOR, msr},
 };
 
 const LVT: u64 = 0x320;
@@ -47,7 +46,7 @@ pub fn init() {
 
     crate::info!("TSC-Deadline timer initialized ({} ticks/ms)", ticks);
 
-    wrmsr(1);
+    msr::wrmsr(IA32_TSC_DEADLINE, 1);
 }
 
 /// Arms the TSC-Deadline timer to fire.
@@ -61,20 +60,12 @@ pub fn arm(tick: TickInterval) {
     let delta = ticks_per_ms.checked_mul(ms).expect("TSC delay overflow");
     let deadline = now.checked_add(delta).expect("TSC deadline overflow");
 
-    wrmsr(deadline);
+    msr::wrmsr(IA32_TSC_DEADLINE, deadline);
 }
 
 /// Returns the calibrated TSC ticks-per-millisecond value.
 pub fn ticks_per_ms() -> u64 {
     *TICKS_PER_MS.get().expect("Ticks per MS haven't calculated")
-}
-
-/// Writes a value to the IA32_TSC_DEADLINE MSR.
-fn wrmsr(value: u64) {
-    // SAFETY: Writing the IA32_TSC_DEADLINE MSR (0x6E0) programs the
-    // next TSC-Deadline timer interrupt. The caller is responsible for
-    // providing a valid future TSC value.
-    unsafe { Msr::new(IA32_TSC_DEADLINE).write(value) };
 }
 
 /// Checks whether the CPU supports TSC-Deadline mode (CPUID.01H:ECX bit 24).

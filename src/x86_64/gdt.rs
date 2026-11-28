@@ -15,19 +15,17 @@ use x86_64::{
 use crate::x86_64::tss::TASK_STATE_SEGMENT;
 
 /// Holds the segment selectors generated during GDT setup.
-struct Selectors {
+pub struct Selectors {
     /// Segment selector for the Task State Segment (TSS).
     tss: SegmentSelector,
     /// Segment selector for the 64-bit kernel code segment.
-    kernel_code: SegmentSelector,
+    pub(crate) kernel_code: SegmentSelector,
     /// Segment selector for the 64-bit kernel data segment.
-    kernel_data: SegmentSelector,
+    pub(crate) kernel_data: SegmentSelector,
     /// Segment selector for the 64-bit user data segment.
-    #[allow(unused)]
-    user_data: SegmentSelector,
+    pub(crate) user_data: SegmentSelector,
     /// Segment selector for the 64-bit user code segment.
-    #[allow(unused)]
-    user_code: SegmentSelector,
+    pub(crate) user_code: SegmentSelector,
 }
 
 /// Static lazy initialization of the GDT and its associated segment selectors.
@@ -76,4 +74,8 @@ pub fn init() {
     }
 
     crate::info!("GDT and TSS loaded");
+}
+
+pub fn selectors() -> &'static Selectors {
+    &GDT_STATE.1
 }

@@ -17,13 +17,18 @@ use crate::{
     error::{Error, Result},
     info,
     memory::{address::PhysExt, allocator, mapper, stack::Stack},
-    scheduler::{context::Context, lifecycle::exit, rflags::RFLAGS, state::State},
+    scheduler::{context::Context, rflags::RFLAGS, state::State},
     warn,
+    x86_64::gdt,
 };
 
 #[derive(Debug)]
 pub struct Task {
-    pub context: Context,
+    pub(crate) context: Context,
+
+    #[allow(dead_code)]
+    pub(crate) kernel_stack: Stack,
+
     pub state: State,
 
     #[allow(dead_code)]
@@ -35,25 +40,44 @@ impl Task {
         let stack = Stack::alloc().expect("Failed to allocate stack for kernel task");
         let mut rsp = stack.top();
 
+        let selectors = gdt::selectors();
+
         rsp -= 8;
         unsafe {
-            *(rsp.as_mut_ptr()) = entry as usize;
+            *(rsp.as_mut_ptr()) = selectors.kernel_data.0;
         }
 
         rsp -= 8;
         unsafe {
-            *(rsp.as_mut_ptr()) = RFLAGS as usize;
+            *(rsp.as_mut_ptr()) = stack.top();
+        }
+
+        rsp -= 8;
+        unsafe {
+            *(rsp.as_mut_ptr()) = RFLAGS;
+        }
+
+        rsp -= 8;
+        unsafe {
+            *(rsp.as_mut_ptr()) = selectors.kernel_code.0;
+        }
+
+        rsp -= 8;
+        unsafe {
+            *(rsp.as_mut_ptr()) = entry as usize;
         }
 
         let (current_frame, _) = Cr3::read();
         let cr3 = current_frame.start_address();
 
         let context = Context::new(rsp.as_u64(), cr3.as_u64());
+        let kernel_stack = Stack::alloc().expect("Failed to allocate kernel stack");
         let state = State::Ready;
         let privilege = PrivilegeLevel::Ring0;
 
         Self {
             context,
+            kernel_stack,
             state,
             privilege,
         }
@@ -194,11 +218,30 @@ impl Task {
             let entry: extern "C" fn() = unsafe { core::mem::transmute(ehdr.e_entry) };
 
             let stack = Stack::alloc()?;
+            let user_stack = Stack::alloc()?;
+
+            let selectors = gdt::selectors();
+
             let mut rsp = stack.top();
 
             rsp -= 8;
             unsafe {
-                *(rsp.as_mut_ptr()) = (exit::exit as fn() -> !) as usize;
+                *(rsp.as_mut_ptr()) = selectors.user_data.0;
+            }
+
+            rsp -= 8;
+            unsafe {
+                *(rsp.as_mut_ptr()) = user_stack.top();
+            }
+
+            rsp -= 8;
+            unsafe {
+                *(rsp.as_mut_ptr()) = RFLAGS;
+            }
+
+            rsp -= 8;
+            unsafe {
+                *(rsp.as_mut_ptr()) = selectors.user_code.0;
             }
 
             rsp -= 8;
@@ -206,12 +249,8 @@ impl Task {
                 *(rsp.as_mut_ptr()) = entry as usize;
             }
 
-            rsp -= 8;
-            unsafe {
-                *(rsp.as_mut_ptr()) = RFLAGS as usize;
-            }
-
             let context = Context::new(rsp.as_u64(), new_frame_addr.as_u64());
+            let kernel_stack = Stack::alloc().expect("Failed to allocate kernel stack");
             let state = State::Ready;
 
             info!(
@@ -223,6 +262,7 @@ impl Task {
 
             Ok(Self {
                 context,
+                kernel_stack,
                 state,
                 privilege,
             })

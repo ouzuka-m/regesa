@@ -22,6 +22,7 @@ mod memory;
 mod process;
 mod qemu;
 mod scheduler;
+mod syscall;
 mod x86_64;
 
 use ::x86_64::{
@@ -69,6 +70,9 @@ extern "C" fn _start() -> ! {
 
     // Greet to the screen
     greet::welcome();
+
+    // Enable the syscalls
+    syscall::init();
 
     // Initialize the cooperative/preemptive task scheduler
     scheduler::init();

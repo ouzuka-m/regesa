@@ -7,6 +7,7 @@ use x86_64::instructions::interrupts;
 /// Exit gateway routine for terminated tasks in the scheduler.
 ///
 /// Halts the CPU while awaiting interrupts once a task has finished its execution.
+#[allow(dead_code)]
 pub fn exit() -> ! {
     loop {
         interrupts::enable_and_hlt();
