@@ -139,9 +139,6 @@ Clippy is the official Rust linter. Beyond catching warnings, it also suggests m
 cargo clippy -- -D warnings
 ```
 
-> [!IMPORTANT]
-> Do not use `#[allow(...)]` to suppress warnings unless there is a very strong reason, documented with a comment explaining why.
-
 ### Pre-Push Checklist
 
 ```bash
@@ -192,6 +189,7 @@ Since there is no automated testing, contributors are responsible for:
      -cdrom regesa.iso \
      -cpu host \
      -enable-kvm \
+     -m 2G \
      -serial stdio
    ```
 

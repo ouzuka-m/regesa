@@ -74,7 +74,7 @@ Compiles the kernel in debug mode and creates `regesa.iso`.
 Compiles the kernel with optimizations and creates `regesa.iso`.
 
 Both scripts will:
-1. Pack `rootfs/` into `iso/boot/initramfs.tar`
+1. Pack `initramfs/` into `iso/boot/initramfs.tar`
 2. Compile the kernel ELF binary
 3. Generate a bootable ISO with Limine
 
